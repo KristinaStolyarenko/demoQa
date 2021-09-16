@@ -18,10 +18,8 @@ public class SoftAssertionsSearch {
     void CheckExampleForJUnit5() {
         open("https://github.com/selenide/selenide");
         $("#wiki-tab").pressEnter();
-        $("#user-content-the-details-for-the-diablo").scrollIntoView(true);
         $(".js-wiki-more-pages-link").click();
-        $(".wiki-pages-box").$(byText("SoftAssertions")).shouldBe(Condition.visible);
-        $(byText("SoftAssertions")).click();
+        $(".wiki-pages-box").$(byText("SoftAssertions")).shouldBe(Condition.visible).click();
         $("#wiki-body").shouldHave(Condition.text("@ExtendWith({SoftAssertsExtension.class})\n" +
                 "class Tests {\n" +
                 "  @Test\n" +
