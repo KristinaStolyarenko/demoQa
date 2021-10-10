@@ -17,14 +17,19 @@ public class FilesTests {
 
     @Test
     void txtTest() throws Exception {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("test.txt");
-        String txt = new String(is.readAllBytes(), "UTF-8");
+        String txt;
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.txt")) {
+            txt = new String(is.readAllBytes(), "UTF-8");
+        }
         assertThat(txt).contains("txt test");
     }
 
     @Test
     void pdfTest() throws Exception {
-        PDF pdf = new PDF(getClass().getClassLoader().getResourceAsStream("test.pdf"));
+        PDF pdf;
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.pdf")) {
+            pdf = new PDF(is);
+        }
         assertThat(pdf.creator).contains("Writer");
         assertThat(pdf.numberOfPages).isEqualTo(1);
         assertThat(pdf.text).contains("Dummy");
@@ -32,8 +37,10 @@ public class FilesTests {
 
     @Test
     void xlsTest() throws Exception {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("test.xlsx");
-        XLS xls = new XLS(is);
+        XLS xls;
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.xlsx")) {
+            xls = new XLS(is);
+        }
         assertThat(xls.excel.getNumberOfSheets()).isEqualTo(1);
         assertThat(xls.excel.getSheetAt(0).getRow(3).getCell(2).getStringCellValue()).isEqualTo("KSM9999");
     }
@@ -41,21 +48,25 @@ public class FilesTests {
     @Test
     void zipTest() throws Exception {
         String password = "qwerty";
-        InputStream is = getClass().getClassLoader().getResourceAsStream("test.zip");
-        ZipInputStream zis = new ZipInputStream(is, password.toCharArray());
-        LocalFileHeader localFileHeader;
-
-        while ((localFileHeader = zis.getNextEntry()) != null) {
-            File extractedFile = new File(localFileHeader.getFileName());
-            assertThat(extractedFile.toString()).contains("test.txt");
+        File extractedFile = null;
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.zip")) {
+            try (ZipInputStream zis = new ZipInputStream(is, password.toCharArray())) {
+                LocalFileHeader localFileHeader;
+                while ((localFileHeader = zis.getNextEntry()) != null) {
+                    extractedFile = new File(localFileHeader.getFileName());
+                }
+            }
         }
+        assertThat(extractedFile.toString()).contains("test.txt");
     }
 
     @Test
     void docTest() throws Exception {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("test.docx");
-        XWPFDocument doc = new XWPFDocument(is);
-        XWPFWordExtractor docExtracted = new XWPFWordExtractor(doc);
+        XWPFWordExtractor docExtracted;
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("test.docx")) {
+            XWPFDocument doc = new XWPFDocument(is);
+            docExtracted = new XWPFWordExtractor(doc);
+        }
         assertThat(docExtracted.getText()).contains("AZVOD219T000000B");
     }
 }
